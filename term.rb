@@ -1,8 +1,18 @@
-#!/usr/bin/env ruby
+#############################################
+# Programacion Orientada a Objetos - Tarea  #
+#                                           #
+#   Carlos Aponte           09-10041        #
+#   Donato Rolo             10-10640        #
+#############################################
+#                                           #
+#     Pregunta 1: Unificacion               #
+#                                           #
+#############################################
 
-#  --------------------------- Clase Padre -------------------------------------
+
 # Clase Term: 
-# Contiene los metodos basicos que deben cumplir los tipos de Prolog.
+# Contiene los metodos y atributos basicos que deben cumplir los tipos de
+# datos de Prolog.
 class Term
   attr :nombre
   
@@ -28,7 +38,8 @@ class Term
 end
 
 
-#  ----------------------- Clase  Hijo Atom-------------------------------------
+# Clase Atomic:
+# Representa lostipos de datos "atom" de Prolog.
 class Atomic < Term
 
   #Crea un alias del metodo name al metodo value y elimina el acceso
@@ -49,8 +60,9 @@ class Atomic < Term
 
 end
 
-#  ----------------------- Clase  Hijo Variable --------------------------------
 
+# Clase Variable:
+# Representa los tipos de datos "variable" de Prolog.
 class Variable < Term
 
   # Implementacion del metodo abstracto to_s
@@ -60,7 +72,9 @@ class Variable < Term
 end
 
 
-#  ----------------------- Clase  Hijo Functor ---------------------------------
+
+# Clase Functor:
+# Representa los predicados de Prolog con su nombre y argumentos.
 class Functor < Term
 
   def initialize(nombre,argumentos)
