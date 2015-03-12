@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
-# Clase Tipos: 
+#  --------------------------- Clase Padre -------------------------------------
+# Clase Term: 
 # Contiene los metodos basicos que deben cumplir los tipos de Prolog.
-class Tipos
+class Term
   attr :nombre
   
   # Constructor
@@ -19,9 +20,16 @@ class Tipos
   def to_s
 
   end
+
+  def unify(target)
+
+  end
+
 end
 
-class Atomic < Tipos
+
+#  ----------------------- Clase  Hijo Atom-------------------------------------
+class Atomic < Term
 
   #Crea un alias del metodo name al metodo value y elimina el acceso
   # a este ultimo (Tienen igual comportamiento para este caso).
@@ -32,9 +40,18 @@ class Atomic < Tipos
   def to_s
     "Atom #{@nombre}"   
   end 
+
+  # Implementacion del metodo abstracto unify
+  def unify(target)
+
+
+  end
+
 end
 
-class Variable < Tipos
+#  ----------------------- Clase  Hijo Variable --------------------------------
+
+class Variable < Term
 
   # Implementacion del metodo abstracto to_s
   def to_s
@@ -42,7 +59,9 @@ class Variable < Tipos
   end 
 end
 
-class Functor < Tipos
+
+#  ----------------------- Clase  Hijo Functor ---------------------------------
+class Functor < Term
 
   def initialize(nombre,argumentos)
     @nombre = nombre
