@@ -3,7 +3,7 @@
 #                                           #
 #   Carlos Aponte           09-10041        #
 #   Donato Rolo             10-10640        #
-#############################################
+#-------------------------------------------#
 #                                           #
 #     Pregunta 2: Busqueda Generalizada     #
 #                                           #
@@ -30,23 +30,8 @@ module BFS
 
 	def find(start, predicate)
 
-	    if predicate.call(start)
-	        start
-	    else
-	        faltantes = []
-	        block = lambda{ |hijo| if hijo != nil; faltantes << hijo; end}
-	        start.each(&block)
-	       
-	        while !faltantes.empty?
-	            tmp = faltantes.shift
-	            
-	            if predicate.call(tmp)
-	                return tmp
-	            end
-	            
-	            tmp.each(&block)
-	        end
-	    end
+		ruta = camino(start,predicate)
+		return ruta.last
 	end
 
 # Procedimiento path:
@@ -60,59 +45,9 @@ module BFS
 
         # Recibe una lista de caminos y verifica si hay uno hacia el nodo
         # con valos 'elem'.
-        def camino(lista,elem)
-            lista.each do |x|
-                if x.last.value == elem
-                    return false
-                end
-            end
-            return true
-        end
+        ruta = camino(start,predicate)
 
-        # Recibe una lista de los caminos mas cortos hacia cada nodo y 
-        # retorna el que satisface el bloque 'predicate'
-        def getCamino(lista,predicate)
-            lista.each do |x|
-                if predicate.call(x.last)
-                    return x
-                end
-            end
-            return nil
-        end
-
-        if predicate.call(start)
-
-            return [start]
-
-        else
-
-            abiertos = []
-            cerrados = []
-
-            abiertos.push([start])
-
-            while !abiertos.empty?
-
-                cerrados << abiertos.shift
-                actual = cerrados.last.clone
-
-                block1 = lambda { |elemento| elemento == actual.last}
-                block2 = lambda { |siguiente|
-                    if ((siguiente != nil) && (self.camino(abiertos,siguiente)) && (self.camino(cerrados,siguiente)))
-                        aux = actual.clone
-                        x = Array.new(aux.push(siguiente))
-                   	    abiertos.push(x)
-                    end
-                }
-
-                elemento = start.find(start, block1)
-                elemento.each(block2)
-
-            end
-
-            camino = getCamino(cerrados,predicate)
-            return camino
-        end
+        return ruta
     end
 
 
@@ -140,7 +75,91 @@ module BFS
         return visitados
     end
 
+
+################################
+#   Procedimientos Auxiliares  #
+################################
+
+	
+# Predicado armar_camino:
+# Devuelve el camino del nodo de "inicio" al nodo "fin" haciendo un recorrido
+# inverso sobre los padres de cada nodo de una corrida de BFS previa
+	def armar_camino(padre, inicio,fin)
+
+		camino = [fin]
+		actual = fin
+
+		while (actual != inicio)
+			actual = padre[actual]
+			camino.unshift(actual)
+		end
+
+		return camino
+	end
+
+# Procedimiento: camino
+# Recorre la estructura correspondiente usando el algoritmo de BFS y retorna
+# el camino desde el nodo de inicio "start" hasta el primer nodo que cumpla
+# el predicado "predicate"
+	def camino (start,predicate)
+
+		camino = []
+		padre = Hash.new
+		anterior = start
+
+	    if predicate.call(start)
+	        start
+	    else
+	        faltantes = []
+	        temporal = []
+	        block = lambda{ |hijo| if hijo != nil; temporal << hijo; end}
+	        start.each(&block) #Calcula los hijos del nodo
+
+	        # Establezco la relacion padre-hijo de los nodos
+	        temporal.each do |hijo|
+ 	     	    faltantes.push(hijo)
+	        	padre[hijo] = start
+	        end
+
+	        temporal = [] #Limpia la "cola" temporal
+
+	        
+	        while !faltantes.empty?
+	            tmp = faltantes.shift
+
+	            if predicate.call(tmp)
+	                camino = armar_camino(padre,start,tmp) #Arma el camino 
+	                return camino
+	            end
+	       
+	            tmp.each(&block) #Calcula los hijos del nodo
+
+	            # Establezco la relacion padre-hijo de los nodos
+		        temporal.each do |hijo|
+	 	     	    faltantes.push(hijo)
+		        	padre[hijo] = tmp
+		        end
+
+		        temporal = [] #Limpia la "cola" temporal
+
+	            anterior = tmp
+	        end
+
+	        return nil 
+	    end
+	end
 end
+
+
+
+################################################################################
+#                                                                              #
+#                                   Clases                                     #
+#                                                                              #
+#                 Clases que trabajaran con el modulo/mixin BFS                #
+#                            -BinTree     -NodeGraph                           #
+#                                                                              #
+################################################################################
 
 
 # Clase GraphNode: 
@@ -165,16 +184,6 @@ class GraphNode
         end
 	end
 end
-
-
-################################################################################
-#                                                                              #
-#                                   Clases                                     #
-#                                                                              #
-#                 Clases que trabajaran con el modulo/mixin BFS                #
-#                            -BinTree     -NodeGraph                           #
-#                                                                              #
-################################################################################
 
 
 # Clase BinTree: 
@@ -221,18 +230,27 @@ if __FILE__ == $0
 	arbol = BinTree.new(1,pisodosl,pisodosr)
 
 	# Con lo que uso el metodo find y path
-	condicion = Proc.new { |x| return (x.value >= 3)}
+	condicion = lambda{ |x| (x.value >= 5)}
 
 	# Con lo que uso el metodo walk
 	action = Proc.new{ |x| x.value = x.value * 2}
 
+	puts ""
+	puts "Uso del metodo find"
+	x = arbol.find(arbol,condicion)
+	puts "#{x.value}"
+
+
+	puts "---------------------------------------------------"
+	puts "Uso del metodo path"
+	arbol.path(arbol,condicion).each do |elem|
+		puts elem.value
+	end
+
+	puts "---------------------------------------------------"
 	puts "Uso del metodo Walk"
 	arbol.walk(arbol,action).each do |elem|
 		puts elem.value
 	end
-
-	puts "Uso del metodo find"
-	arbol.find(arbol,condicion)
-
 
 end
