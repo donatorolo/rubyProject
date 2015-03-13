@@ -326,9 +326,9 @@ class LCR
 # Procedimiento: aceptable
 # Determina si un estado es aceptable. Esto es, si no tiene la combinacion de
 # lobo-cabra, cabra-repollo en ninguna de sus orillas.
- 	def aceptable(estado)
- 		izq = estado.value["left"]
- 		der = estado.value["right"]
+ 	def aceptable
+ 		izq = self.value["left"]
+ 		der = self.value["right"]
 
  		if((izq.include?(:lobo) && izq.include?(:cabra)) || 
  		   (der.include?(:lobo) && der.include?(:cabra)) || 
@@ -413,6 +413,7 @@ if __FILE__ == $0
 
 
 	a = LCR.new("izq",[:lobo,:cabra,:repollo],[])
+	b = LCR.new("izq",[:lobo,:cabra,:repollo],[])
 	a.solve
 	
 
