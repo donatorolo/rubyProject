@@ -31,7 +31,11 @@ module BFS
 	def find(start, predicate)
 
 		ruta = camino(start,predicate)
-		return ruta.last
+		if ruta == nil 
+			return nil
+		else 
+			return ruta.last
+		end
 	end
 
 # Procedimiento path:
@@ -45,9 +49,13 @@ module BFS
 
         # Recibe una lista de caminos y verifica si hay uno hacia el nodo
         # con valos 'elem'.
-        ruta = camino(start,predicate)
+		ruta = camino(start,predicate)
 
-        return ruta
+		if ruta == nil 
+			return nil
+		else 
+			return ruta
+		end
     end
 
 
@@ -113,6 +121,7 @@ module BFS
 	        faltantes = []
 	        temporal = []
 	        block = lambda{ |hijo| if hijo != nil; temporal << hijo; end}
+
 	        start.each(&block) #Calcula los hijos del nodo
 
 	        # Establezco la relacion padre-hijo de los nodos
@@ -149,7 +158,6 @@ module BFS
 	    end
 	end
 end
-
 
 
 ################################################################################
@@ -208,49 +216,204 @@ class BinTree
 end
 
 
+
+class LCR
+	include BFS
+	attr_reader :value
+
+	#Where indica si estamos en la orilla izq o derecha
+	# left y right indican que elementos (lobo,cabra,repollo) hay en cada orilla
+
+ 	def initialize(where,left,right) # Indique los argumentos
+
+#Es necesario hacer chequeos de cantidad de elementos, que sean los que son, y que
+# where sea un orilla.
+		sleft = []
+		sright = []
+		
+		left.each do |obj|
+			sleft.push(obj.to_sym)
+		end
+
+		right.each do |obj|
+			sright.push(obj.to_sym)
+		end
+
+	   	where = where.to_sym
+    
+	    @value = {"where" => where, "left"  => sleft, "right" => sright}
+	end
+
+
+	#Itera sobre los posibles estados validos de mover obj de una orilla a otra
+ 	def each(p)
+
+ 		# Si el bote esta del lado izquierdo
+ 		if @value["where"].to_s == "left"
+
+		 	#Movimiento con el bote vacio
+ 			ni = @value["left"]
+ 			nd = @value["right"]
+		    posible = LCR.new("righ",ni,nd)
+		    p.call(posible)
+
+		    #Detemrina los movimientos validos con algun objeto
+ 			elementos = @value["left"]
+	    	elementos.each do |obj|
+		       
+	    		#Simula el movimiento del obj a la derecha
+	    		ni = Array.new(@value["left"])
+		        ni.delete(obj)
+		        nd = Array.new(@value["right"])
+		        nd.push(obj)
+
+		        #Crea un nuevo estado 
+		        posible = LCR.new("right",ni,nd)
+
+		        #Si el estado es valido lo usa
+		        if posible.aceptable
+		          p.call(posible)
+		        end
+		    end
+
+		# Si el bote esta del lado derecho
+ 		else
+ 			#Movimiento con el bote vacio
+ 			ni = @value["left"]
+ 			nd = @value["right"]
+		    posible = LCR.new("left",ni,nd)
+		    p.call(posible)
+
+		    #Detemrina los movimientos validos con algun objeto
+ 			elementos = @value["right"]
+	    	elementos.each do |obj|
+		       
+	    		#Simula el movimiento del obj a la izq
+		        nd = Array.new(@value["right"])
+		        nd.delete(obj)
+		        ni = Array.new(@value["left"])
+		        ni.push(obj)
+
+		        #Crea un nuevo estado 
+		        posible = LCR.new("left",ni,nd)
+
+		        #Si el estado es valido lo usa
+		        if posible.aceptable
+		          p.call(posible)
+		        end
+		    end
+ 		end
+ 	end
+
+# Procedimiento: solve
+# Resuelve el problema LCR asumiendo que el objetivo es llevar todos los 
+# objetos a la orilla derecha. Asi mismo, retorna los pasos necesarios para 
+# llegar a dicha solucion.
+
+ 	def solve
+ 		fin = Proc.new{ |est| est == LCR.new(:right,[],[:lobo,:cabra,:repollo])}
+ 		cam = path(self,fin)
+ 		i = 0
+ 		puts "Paso #{i}: Lado Actual: #{self.value["where"]} | Orilla Izq: #{self.value["left"]} | Orilla Der: #{self.value["right"]}"
+ 		i += 1  
+ 		cam.each do |paso|
+			puts "Paso #{i}: Lado Actual: #{self.value["where"]} | Orilla Izq: #{self.value["left"]} | Orilla Der: #{self.value["right"]}"
+ 			i += 1  
+ 		end
+
+ 	end
+
+# Procedimiento: aceptable
+# Determina si un estado es aceptable. Esto es, si no tiene la combinacion de
+# lobo-cabra, cabra-repollo en ninguna de sus orillas.
+ 	def aceptable(estado)
+ 		izq = estado.value["left"]
+ 		der = estado.value["right"]
+
+ 		if((izq.include?(:lobo) && izq.include?(:cabra)) || 
+ 		   (der.include?(:lobo) && der.include?(:cabra)) || 
+ 		   (izq.include?(:repollo) && izq.include?(:cabra)) ||
+ 		   (der.include?(:repollo) && der.include?(:cabra)))
+ 			return false
+ 		end
+
+ 		return true
+
+ 	end
+
+ # Overrride del metodo de comparacion profunda (==)
+	def ==(elem)
+    	if ((@value["where"] == elem.value["where"]) &&
+    	   (@value["right"].sort == elem.value["right"].sort) &&
+    	   (@value["left"].sort == elem.value["left"].sort))
+
+    		return true
+    	else 
+    		return false
+    	end
+ 	end
+
+ end
+
+
 if __FILE__ == $0
 
 # Arbol de Prueba
 
-	pisocincol = BinTree.new(10, nil,nil)
-	pisocincor = BinTree.new(11, nil,nil)
+	# pisocincol = BinTree.new(10, nil,nil)
+	# pisocincor = BinTree.new(11, nil,nil)
 
-	pisocuatrol = BinTree.new(8,pisocincol,pisocincor)
-	pisocuatror = BinTree.new(9,nil,nil)
+	# pisocuatrol = BinTree.new(8,pisocincol,pisocincor)
+	# pisocuatror = BinTree.new(9,nil,nil)
 
-	pisotresbl = BinTree.new(6,pisocuatrol,pisocuatror)
-	pisotresbr = BinTree.new(7,nil,nil)
+	# pisotresbl = BinTree.new(6,pisocuatrol,pisocuatror)
+	# pisotresbr = BinTree.new(7,nil,nil)
 
-	pisotresal = BinTree.new(4,nil,nil)
-	pisotresar = BinTree.new(5,nil,nil)
+	# pisotresal = BinTree.new(4,nil,nil)
+	# pisotresar = BinTree.new(5,nil,nil)
 
-	pisodosl = BinTree.new(2,pisotresal,pisotresar)
-	pisodosr = BinTree.new(3,pisotresbl,pisotresbr)
+	# pisodosl = BinTree.new(2,pisotresal,pisotresar)
+	# pisodosr = BinTree.new(3,pisotresbl,pisotresbr)
 
-	arbol = BinTree.new(1,pisodosl,pisodosr)
+	# arbol = BinTree.new(1,pisodosl,pisodosr)
 
-	# Con lo que uso el metodo find y path
-	condicion = lambda{ |x| (x.value >= 5)}
+	# # Con lo que uso el metodo find y path
+	# condicion = lambda{ |x| (x.value >= 5)}
 
-	# Con lo que uso el metodo walk
-	action = Proc.new{ |x| x.value = x.value * 2}
+	# # Con lo que uso el metodo walk
+	# action = Proc.new{ |x| x.value = x.value * 2}
 
-	puts ""
-	puts "Uso del metodo find"
-	x = arbol.find(arbol,condicion)
-	puts "#{x.value}"
+	# puts ""
+	# puts "Uso del metodo find"
+	# x = arbol.find(arbol,condicion)
+	
+	# if x != nil
+	# 	puts "#{x.value}"
+	# else
+	# 	nil
+	# end
+
+	# puts "---------------------------------------------------"
+	# puts "Uso del metodo path"
+
+	 # cam = arbol.path(arbol,condicion)
+	 # if cam != nil
+	 # 	cam.each do |elem|
+	 # 		puts elem.value
+	 # 	end
+	 # else
+	 # 	nil
+	 # end
+
+	# puts "---------------------------------------------------"
+	# puts "Uso del metodo Walk"
+	# arbol.walk(arbol,action).each do |elem|
+	# 	puts elem.value
+	# end
 
 
-	puts "---------------------------------------------------"
-	puts "Uso del metodo path"
-	arbol.path(arbol,condicion).each do |elem|
-		puts elem.value
-	end
-
-	puts "---------------------------------------------------"
-	puts "Uso del metodo Walk"
-	arbol.walk(arbol,action).each do |elem|
-		puts elem.value
-	end
+	a = LCR.new("izq",[:lobo,:cabra,:repollo],[])
+	a.solve
+	
 
 end
