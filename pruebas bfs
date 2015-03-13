@@ -1,0 +1,66 @@
+
+
+if __FILE__ == $0
+
+# Arbol de Prueba
+
+    pisocincol = BinTree.new(10, nil,nil)
+    pisocincor = BinTree.new(11, nil,nil)
+
+    pisocuatrol = BinTree.new(8,pisocincol,pisocincor)
+    pisocuatror = BinTree.new(9,nil,nil)
+
+    pisotresbl = BinTree.new(6,pisocuatrol,pisocuatror)
+    pisotresbr = BinTree.new(7,nil,nil)
+
+    pisotresal = BinTree.new(4,nil,nil)
+    pisotresar = BinTree.new(5,nil,nil)
+
+    pisodosl = BinTree.new(2,pisotresal,pisotresar)
+    pisodosr = BinTree.new(3,pisotresbl,pisotresbr)
+
+    arbol = BinTree.new(1,pisodosl,pisodosr)
+
+    # Con lo que uso el metodo find y path
+    condicion = lambda{ |x| (x.value >= 5)}
+
+    # Con lo que uso el metodo walk
+    action = Proc.new{ |x| x.value = x.value * 2}
+
+    # puts ""
+    puts "Uso del metodo find"
+    x = arbol.find(arbol,condicion)
+    
+    if x != nil
+        puts "#{x.value}"
+    else
+        nil
+    end
+
+    puts "---------------------------------------------------"
+    puts "Uso del metodo path"
+
+    cam = arbol.path(arbol,condicion)
+    if cam != nil
+        cam.each do |elem|
+            puts elem.value
+        end
+    else
+        nil
+    end
+
+    puts "---------------------------------------------------"
+    puts "Uso del metodo Walk"
+    arbol.walk(arbol,action).each do |elem|
+        puts elem.value
+    end
+
+
+    puts "---------------------------------------------------"
+    puts "Solucion del LCR"
+
+    inicio = LCR.new("left",[:lobo,:cabra,:repollo],[])
+    inicio.solve
+    
+
+end
