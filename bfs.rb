@@ -120,7 +120,7 @@ module BFS
 	    else
 	        faltantes = []
 	        temporal = []
-	        block = lambda{ |hijo| if hijo != nil; temporal << hijo; end}
+	        block = lambda{ |hijo| if !(hijo.nil?); temporal << hijo; end}
 
 	        start.each(&block) #Calcula los hijos del nodo
 
@@ -246,7 +246,7 @@ class LCR
 
 
 	#Itera sobre los posibles estados validos de mover obj de una orilla a otra
- 	def each(p)
+ 	def each(&block)
 
  		# Si el bote esta del lado izquierdo
  		if @value["where"].to_s == "left"
@@ -255,7 +255,7 @@ class LCR
  			ni = @value["left"]
  			nd = @value["right"]
 		    posible = LCR.new("righ",ni,nd)
-		    p.call(posible)
+		    block.call(posible)
 
 		    #Detemrina los movimientos validos con algun objeto
  			elementos = @value["left"]
@@ -272,7 +272,7 @@ class LCR
 
 		        #Si el estado es valido lo usa
 		        if posible.aceptable
-		          p.call(posible)
+		          block.call(posible)
 		        end
 		    end
 
@@ -282,7 +282,7 @@ class LCR
  			ni = @value["left"]
  			nd = @value["right"]
 		    posible = LCR.new("left",ni,nd)
-		    p.call(posible)
+		    block.call(posible)
 
 		    #Detemrina los movimientos validos con algun objeto
  			elementos = @value["right"]
@@ -299,7 +299,7 @@ class LCR
 
 		        #Si el estado es valido lo usa
 		        if posible.aceptable
-		          p.call(posible)
+		          block.call(posible)
 		        end
 		    end
  		end
