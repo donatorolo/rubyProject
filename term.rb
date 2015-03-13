@@ -9,10 +9,11 @@
 #                                           #
 #############################################
 
-
+###############################################################################
 # Clase Term: 
 # Contiene los metodos y atributos basicos que deben cumplir los tipos de
 # datos de Prolog.
+###############################################################################
 class Term
   attr_reader :nombre
   
@@ -31,15 +32,17 @@ class Term
 
   end
 
+  # Metodo Abstracto unify
   def unify target
 
   end
 
 end
 
-
+###############################################################################
 # Clase Atomic:
-# Representa lostipos de datos "atom" de Prolog.
+# Representa el tipos de datos "atom" de Prolog.
+###############################################################################
 class Atomic < Term
 
   #Crea un alias del metodo name al metodo value y elimina el acceso
@@ -58,96 +61,91 @@ class Atomic < Term
   end
 
   def right_par_atomic x
-    return self.value == x.value
+    if self.value == x.value 
+      puts "{}"
+    else
+      return nil
+    end
   end
 
   def right_par_var x
-    p = Proc.new{|x, y| x = VariableLigada.new(x.name, y.value)}
-    p.call(x,self)
-    # x = VariableLigada.new(x.name, self.value)
-    puts "HOLAAAAAAAAAAAAAA#{x.class}"
-    return true
-  end
-
-  def right_par_varLig x
-    return x.value == self.value
+    if x.value.nil? #Esta libre
+      puts "#{self.to_s} => #{x.to_s}"
+    elsif x.value == self.value
+      puts "#{self.to_s} => #{x.to_s}"
+    else
+      nil
+    end
   end
 
   def right_par_functor x
-    return false
+    nil
   end
 
 end
 
+###############################################################################
 # Clase Variable:
-# Representa los tipos de datos "variable" de Prolog.
+# Representa el tipo de datos "variable" de Prolog.
+###############################################################################
 class Variable < Term
 
+  def initialize(nombre, valor = nil)
+    @nombre = nombre
+    @value = valor
+  end
+
+  def setValue x
+    self.value = x
+  end
   # Implementacion del metodo abstracto to_s
   def to_s
     "Var #{@nombre}"   
   end 
 
   def unify target
-    target.right_par_var(self)
+    target.right_par_var(self) 
   end
 
   def right_par_atomic x
-    # self = VariableLigada.new(self.name, x.value)
-    # return true
+    if self.value.nil? #Esta libre
+      puts "#{self.to_s} => #{x.to_s}"
+    elsif self.value == x.value
+      puts "#{self.to_s} => #{x.to_s}"
+    else
+      nil
+    end
   end
 
   def right_par_var x
-    return true
+    if self.value.nil? || x.value.nil?
+      puts "#{self.to_s} => #{x.to_s}"
+    elsif self.value == x.value
+      puts "#{self.to_s} => #{x.to_s}"
+    else
+      nil
+    end
   end
 
-  def right_par_varLig x
+  def right_par_functor (x,ambiente=nil)
+    if self.value.nil?
+      puts "#{self.to_s} => #{x.to_s}"
 
-  end
-
-  def right_par_functor x
-    
+    #Verifica si el valor ligado a la var es el functor
+    # elsif !ambiente.nil?
+    #   if ambiente[x.to_s].value == self.to_s
+    #     puts "#{self.to_s} => #{x.to_s}"
+    #   else
+    #     nil
+    #   end
+    end
   end
 end
 
-# Clase VariableLigada
-
-class VariableLigada < Variable
-  
-  def initialize(nombre, valor)
-    @nombre = nombre
-    @value = valor
-  end
-
-  def value
-    return @value
-  end
-
-  def unify target
-    target.right_par_var(self)
-  end
-
-  def right_par_atomic x
-    return self.value == x.value
-  end
-
-  def right_par_var x
-    x = VariableLigada.new(x.name, self.value)
-    return true
-  end
-
-  def right_par_varLig x
-    return self.value == x.value
-  end
-  
-  def right_par_functor x
-    
-  end
-
-end
-
+###############################################################################
 # Clase Functor:
 # Representa los predicados de Prolog con su nombre y argumentos.
+###############################################################################
 class Functor < Term
 
   def initialize(nombre,argumentos)
@@ -169,15 +167,36 @@ class Functor < Term
   end
 
   def right_par_atomic x
-    return false
+    nil
   end
 
-  def right_par_var x
-    return self.value == x.value
+  def right_par_var (x,ambiente=nil)
+    if x.value.nil?
+      puts "#{self.to_s} => #{x.to_s}"
+
+    ##Verifica si el valor ligado a la var es el functor
+    # elsif !ambiente.nil?
+    #   if ambiente[x.to_s].value == self.to_s
+    #     puts "#{self.to_s} => #{x.to_s}"
+    #   else
+    #     nil
+    #   end
+    else
+      nil
+    end
+      
   end
 
   def right_par_functor x
-    
+
+    if (self.nombre == x.nombre) && (self.args.size == x.args.size)
+
+      #Unifico los argumentos.
+      
+    else
+      nil
+    end
+
   end
 end
 
